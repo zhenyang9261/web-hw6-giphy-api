@@ -32,7 +32,7 @@ function init() {
 function getGifs(btnValue) {
 
     // local variables
-    var col, img;
+    var col, img, info;
 
     queryParams.q = btnValue;
     queryParams.limit = picNum;
@@ -46,9 +46,12 @@ function getGifs(btnValue) {
       }).then(function(response) {
         console.log(response);
 
+        // Clean up show area
+        $("#show").empty();
+        
         for (var i=0; i<picNum; i++) {
 
-            // Compose a div to hold the image
+            // Compose a div to hold the image and the information
             col = $("<div>");
             col.attr("class", "col-xs-12 col-sm-4");
 
@@ -57,13 +60,21 @@ function getGifs(btnValue) {
             img.attr("alt", btnValue + " picture from Giphy");
             img.attr("src", response.data[i].images.fixed_width_still.url);
             img.attr("class", "gif");
+            img.attr("data-still", response.data[i].images.fixed_width_still.url);
+            img.attr("data-animate", response.data[i].images.fixed_width.url);
+            img.attr("data-state", "still");
+            img.attr("id", "gif-" + i);
             
-            // Add the image to the div
+            // Compose a div to hold information
+            info = $("<div>");
+            info.text("Rating: " + response.data[i].rating);
+
+            // Add the image and info to the div
             col.append(img);
+            col.append(info);
 
             // Add the div to the image area
             $("#show").append(col);
-
         }
 
     });
@@ -79,7 +90,19 @@ function addNewTopic(newTopic) {
 /*
  * Function: to toggle between moving and still pictures when a picture is clicked
  */
-function togglePic(picture) {
+function togglePicState(picture, state) {
+
+
+    if (state == "still") {
+        var sourceAnimate = $("#"+picture).attr("data-animate");
+        $("#"+picture).attr("src", sourceAnimate);
+        $("#"+picture).attr("data-state", "animate");
+      }
+      else {
+        var sourceStill = $("#"+picture).attr("data-still");
+        $("#"+picture).attr("src", sourceStill);
+        $("#"+picture).attr("data-state", "still");
+    }
 
 }
 
@@ -96,5 +119,8 @@ $(document).ready(function() {
     // Input Submit button listener
 
     // Gif listener
+    $(document).on("click", ".gif", function() {   
+        togglePicState($(this).attr("id"), $(this).attr("data-state"));
+    });
 
 });
