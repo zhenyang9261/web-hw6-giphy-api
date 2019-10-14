@@ -1,5 +1,5 @@
 // List of topics
-var topics = ["dog", "cat", "rabbit", "hamster", "skunk", "goldfish", "bird", "ferret", "turtle", "golden glider", "chinchilla", "hedgehog", "crab", "goat", "chicken", "pig", "frog", "salamander"];
+var topics = ["dog", "cat", "rabbit", "hamster", "skunk", "goldfish", "bird", "ferret", "turtle", "chinchilla", "hedgehog", "crab", "goat", "chicken", "pig", "frog", "salamander"];
 
 // query URL base part
 var queryURL = "https://api.giphy.com/v1/gifs/search?";
@@ -11,9 +11,12 @@ var queryParams = { "api_key": apiKey};
 var picNum = 10;
 
 /*
- * Function: to initialize global variables and place initial buttons in the page.
+ * Function: to display the topic buttons in the page.
  */
-function init() {
+function renderBtns() {
+
+    // Clean up the button area
+    $("#giphyBtn").empty();
 
     for (var i=0; i<topics.length; i++) {
         var btn = $("<button>");
@@ -48,7 +51,7 @@ function getGifs(btnValue) {
 
         // Clean up show area
         $("#show").empty();
-        
+
         for (var i=0; i<picNum; i++) {
 
             // Compose a div to hold the image and the information
@@ -58,16 +61,21 @@ function getGifs(btnValue) {
             // Compose the image element
             img = $("<img>");
             img.attr("alt", btnValue + " picture from Giphy");
-            img.attr("src", response.data[i].images.fixed_width_still.url);
-            img.attr("class", "gif");
-            img.attr("data-still", response.data[i].images.fixed_width_still.url);
-            img.attr("data-animate", response.data[i].images.fixed_width.url);
+            img.attr("src", response.data[i].images.fixed_height_still.url);
+            img.attr("class", "gif img-fluid");
+            img.attr("data-still", response.data[i].images.fixed_height_still.url);
+            img.attr("data-animate", response.data[i].images.fixed_height.url);
             img.attr("data-state", "still");
             img.attr("id", "gif-" + i);
             
             // Compose a div to hold information
             info = $("<div>");
-            info.text("Rating: " + response.data[i].rating);
+            var title = $("<div>");
+            var rating = $("<div>");
+            title.text(response.data[i].title);
+            rating.text("Rating: " + response.data[i].rating);
+            info.append(title);
+            info.append(rating);
 
             // Add the image and info to the div
             col.append(img);
@@ -83,7 +91,20 @@ function getGifs(btnValue) {
 /* 
  * Function: to add new topic when Submit button is clicked
  */
-function addNewTopic(newTopic) {
+function addNewTopic() {
+    
+    
+    var topic = $("#newTopicVal").val().trim().toLowerCase();
+
+    // If a topic is entered
+    if (topic.length != 0) {
+        
+        // Add the topic to the array
+        topics.push(topic);
+
+        // Refresh the button display
+        rendertns();
+    }
 
 }
 
@@ -109,7 +130,7 @@ function togglePicState(picture, state) {
 $(document).ready(function() {
 
     // Initialize
-    init();
+    renderBtns();
 
     // Gifs button listener
     $(document).on("click", ".topicBtn", function() {   
@@ -117,6 +138,10 @@ $(document).ready(function() {
     });
 
     // Input Submit button listener
+    $("#newTopicBtn").on("click", function() {
+        event.preventDefault();
+        addNewTopic();
+    });
 
     // Gif listener
     $(document).on("click", ".gif", function() {   
