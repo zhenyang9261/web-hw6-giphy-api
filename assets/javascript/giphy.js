@@ -56,7 +56,7 @@ function getGifs(btnValue) {
 
             // Compose a div to hold the image and the information
             col = $("<div>");
-            col.attr("class", "col-xs-12 col-sm-4");
+            col.attr("class", "col-xs-12 col-sm-4 img-container");
 
             // Compose the image element
             img = $("<img>");
@@ -76,6 +76,7 @@ function getGifs(btnValue) {
             rating.text("Rating: " + response.data[i].rating);
             info.append(title);
             info.append(rating);
+            info.attr("class", "info");
 
             // Add the image and info to the div
             col.append(img);
@@ -103,7 +104,7 @@ function addNewTopic() {
         topics.push(topic);
 
         // Refresh the button display
-        rendertns();
+        renderBtns();
     }
 
 }
