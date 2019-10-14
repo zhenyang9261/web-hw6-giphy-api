@@ -1,0 +1,21 @@
+.topicBtn {
+    margin: 0.5rem;
+}
+
+#newTopicBtn {
+    margin-left: 0.6rem;
+}
+
+.img-container {
+    border: 1px solid #efefef;
+    text-align: center;
+}
+
+.info {
+    margin: 0.5rem 0;
+    text-align: center;
+}
+
+.gif {
+    margin-top: 0.5rem;
+}
