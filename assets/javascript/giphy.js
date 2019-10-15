@@ -1,6 +1,9 @@
 // List of topics
 var topics = ["dog", "cat", "rabbit", "hamster", "skunk", "goldfish", "bird", "ferret", "turtle", "chinchilla", "hedgehog", "crab", "goat", "chicken", "pig", "frog", "salamander"];
 
+// Array to keep favorite gifs
+var favorites = [];
+
 // query URL base part
 var queryURL = "https://api.giphy.com/v1/gifs/search?";
 
@@ -36,6 +39,7 @@ function getGifs(btnValue) {
 
     // local variables
     var col, img, info, fav;
+    var gifStill, gifAnimate, gifTitle, gifRating;
 
     queryParams.q = btnValue;
     queryParams.limit = picNum;
@@ -54,6 +58,18 @@ function getGifs(btnValue) {
 
         for (var i=0; i<picNum; i++) {
 
+            // Extract info from response
+            gifStill = response.data[i].images.fixed_height_still.url;
+            gifAnimate = response.data[i].images.fixed_height.url;
+            gifTitle = response.data[i].title;
+            gifRating = response.data[i].rating;
+
+            // Put in an object 
+            var favObj = {"gifStill" : gifStill,
+                          "gifAnimate" : gifAnimate,
+                          "gifTitle" : gifTitle,
+                          "gifRating" : gifRating};
+
             // Compose a div to hold the image and the information
             col = $("<div>");
             col.attr("class", "col-xs-12 col-sm-4 img-container");
@@ -61,10 +77,10 @@ function getGifs(btnValue) {
             // Compose the image element
             img = $("<img>");
             img.attr("alt", btnValue + " picture from Giphy");
-            img.attr("src", response.data[i].images.fixed_height_still.url);
+            img.attr("src", gifStill);
             img.attr("class", "gif img-fluid");
-            img.attr("data-still", response.data[i].images.fixed_height_still.url);
-            img.attr("data-animate", response.data[i].images.fixed_height.url);
+            img.attr("data-still", gifStill);
+            img.attr("data-animate", gifAnimate);
             img.attr("data-state", "still");
             img.attr("id", "gif-" + i);
             
@@ -75,16 +91,14 @@ function getGifs(btnValue) {
             fav.attr("data-toggle", "tooltip");
             fav.attr("data-placement", "top");
             fav.attr("title", "Add to Favorite");
-            fav.attr("id", "fav-" + i);
+            fav.attr("data-gif-attr", JSON.stringify(favObj));
 
             // Compose a div to hold information
             info = $("<div>");
             var title = $("<div>");
             var rating = $("<div>");
-            var titleText = response.data[i].title;
-
-            title.text(titleText.length==0? "No Title" : titleText);
-            rating.text("Rating: " + response.data[i].rating);
+            title.text(gifTitle.length==0? "No Title" : gifTitle);
+            rating.text("Rating: " + gifRating);
             info.append(title);
             info.append(rating);
             info.attr("class", "info");
@@ -143,8 +157,57 @@ function togglePicState(picture, state) {
 /*
  * Function: to store user's favorite gif
  */
-function addToFavorite(picture) {
-    console.log(picture);
+function addToFavorite(gifAttr) {
+    
+    // Add the gif object in the favorite gif array
+    favorites.push(JSON.parse(gifAttr));
+}
+
+/* 
+ * Function: to display user selected favorite gifs
+ */
+function displayFav(favoriteGifs) {
+
+    // local variables
+    var col, img, info, fav;
+
+    // Clean up show area
+    $("#show").empty();
+
+    for (var i = 0; i<favorites.length; i++) {
+
+         // Compose a div to hold the image and the information
+         col = $("<div>");
+         col.attr("class", "col-xs-12 col-sm-4 img-container");
+
+         // Compose the image element
+         img = $("<img>");
+         img.attr("alt", "Favorite Gif");
+         img.attr("src", favorites[i].gifStill);
+         img.attr("class", "gif img-fluid");
+         img.attr("data-still", favorites[i].gifStill);
+         img.attr("data-animate", favorites[i].gifAnimate);
+         img.attr("data-state", "still");
+         img.attr("id", "gif-" + i);
+
+         // Compose a div to hold information
+         info = $("<div>");
+         var title = $("<div>");
+         var rating = $("<div>");
+         title.text(favorites[i].gifTitle.length==0? "No Title" : favorites[i].gifTitle);
+         rating.text("Rating: " + favorites[i].gifRating);
+         info.append(title);
+         info.append(rating);
+         info.attr("class", "info");
+        
+         // Add the image and info to the div
+         col.append(img);
+         col.append(fav);
+         col.append(info);
+
+         // Add the div to the image area
+         $("#show").append(col);
+    }
 }
 
 $(document).ready(function() {
@@ -173,7 +236,12 @@ $(document).ready(function() {
 
     // Add to Favorite listener
     $(document).on("click", ".favorite", function() {   
-        addToFavorite($(this).attr("id"));
+        addToFavorite($(this).attr("data-gif-attr"));
+    });
+    
+    // Favorite GIFs button listener
+    $("#favoriteGifBtn").on("click", function() {
+        displayFav();
     });
 
 });
