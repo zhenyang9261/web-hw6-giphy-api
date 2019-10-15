@@ -23,7 +23,7 @@ function renderBtns() {
 
         btn.text(topics[i]);
         btn.attr("value", topics[i]);
-        btn.attr("class", "btn btn-primary btn-lg topicBtn");
+        btn.attr("class", "btn btn-outline-info btn-lg topicBtn");
 
         $("#giphyBtn").append(btn);
     }   
@@ -35,7 +35,7 @@ function renderBtns() {
 function getGifs(btnValue) {
 
     // local variables
-    var col, img, info;
+    var col, img, info, fav;
 
     queryParams.q = btnValue;
     queryParams.limit = picNum;
@@ -68,18 +68,30 @@ function getGifs(btnValue) {
             img.attr("data-state", "still");
             img.attr("id", "gif-" + i);
             
+            // Compose the favorite icon element
+            fav = $("<img>");
+            fav.attr("class", "favorite");
+            fav.attr("src", "assets/images/heart.png");
+            fav.attr("data-toggle", "tooltip");
+            fav.attr("data-placement", "top");
+            fav.attr("title", "Add to Favorite");
+            fav.attr("id", "fav-" + i);
+
             // Compose a div to hold information
             info = $("<div>");
             var title = $("<div>");
             var rating = $("<div>");
-            title.text(response.data[i].title);
+            var titleText = response.data[i].title;
+
+            title.text(titleText.length==0? "No Title" : titleText);
             rating.text("Rating: " + response.data[i].rating);
             info.append(title);
             info.append(rating);
             info.attr("class", "info");
-
+            
             // Add the image and info to the div
             col.append(img);
+            col.append(fav);
             col.append(info);
 
             // Add the div to the image area
@@ -128,10 +140,20 @@ function togglePicState(picture, state) {
 
 }
 
+/*
+ * Function: to store user's favorite gif
+ */
+function addToFavorite(picture) {
+    console.log(picture);
+}
+
 $(document).ready(function() {
 
     // Initialize
     renderBtns();
+
+    // Ready to display tooltips
+    $('[data-toggle="tooltip"]').tooltip();  
 
     // Gifs button listener
     $(document).on("click", ".topicBtn", function() {   
@@ -147,6 +169,11 @@ $(document).ready(function() {
     // Gif listener
     $(document).on("click", ".gif", function() {   
         togglePicState($(this).attr("id"), $(this).attr("data-state"));
+    });
+
+    // Add to Favorite listener
+    $(document).on("click", ".favorite", function() {   
+        addToFavorite($(this).attr("id"));
     });
 
 });
