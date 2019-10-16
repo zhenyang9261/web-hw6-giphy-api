@@ -1,8 +1,8 @@
 // List of topics
 var topics = ["dog", "cat", "rabbit", "hamster", "skunk", "goldfish", "bird", "ferret", "turtle", "chinchilla", "hedgehog", "crab", "goat", "chicken", "pig", "frog", "salamander"];
 
-// Array to keep favorite gifs
-var favorites = [];
+// Object to keep favorite gifs
+var favorites = {};
 
 // query URL base part
 var queryURL = "https://api.giphy.com/v1/gifs/search?";
@@ -13,6 +13,21 @@ var queryParams = { "api_key": apiKey};
 // Number of pictures to get at one time
 var picNum = 10;
 
+/*
+ * Function: called when the page is loaded
+ */
+function init() {
+
+    // Get favorite gifs from localstorage
+    favorites = JSON.parse(localStorage.getItem("favGifs"));
+
+    // If not set yet, define as an empty object
+    if (favorites == null)
+        favorites = {};
+
+    // Place the buttons
+    renderBtns();
+}
 /*
  * Function: to display the topic buttons in the page.
  */
@@ -39,7 +54,7 @@ function getGifs(btnValue) {
 
     // local variables
     var col, img, info, fav;
-    var gifStill, gifAnimate, gifTitle, gifRating;
+    var gifStill, gifAnimate, gifTitle, gifRating, gifId;
 
     queryParams.q = btnValue;
     queryParams.limit = picNum;
@@ -63,12 +78,15 @@ function getGifs(btnValue) {
             gifAnimate = response.data[i].images.fixed_height.url;
             gifTitle = response.data[i].title;
             gifRating = response.data[i].rating;
+            gifId = response.data[i].id;
+console.log("gifId: " + gifId);
 
             // Put in an object 
-            var favObj = {"gifStill" : gifStill,
+            var favObj = {gifId: {"gifStill" : gifStill,
                           "gifAnimate" : gifAnimate,
                           "gifTitle" : gifTitle,
-                          "gifRating" : gifRating};
+                          "gifRating" : gifRating}};
+console.log("favObj: " + favObj);
 
             // Compose a div to hold the image and the information
             col = $("<div>");
@@ -87,7 +105,10 @@ function getGifs(btnValue) {
             // Compose the favorite icon element
             fav = $("<img>");
             fav.attr("class", "favorite");
-            fav.attr("src", "assets/images/heart.png");
+            if (gifId in favorites) 
+                fav.attr("src", "assets/images/heart.png");
+            else
+                fav.attr("src", "assets/images/heart-hollow.png");
             fav.attr("data-toggle", "tooltip");
             fav.attr("data-placement", "top");
             fav.attr("title", "Add to Favorite");
@@ -157,10 +178,30 @@ function togglePicState(picture, state) {
 /*
  * Function: to store user's favorite gif
  */
-function addToFavorite(gifAttr) {
-    
-    // Add the gif object in the favorite gif array
-    favorites.push(JSON.parse(gifAttr));
+function addToFavorite(elem) {
+
+    var attr = elem.attr("data-gif-attr");
+    var attrObj = JSON.parse(attr);
+console.log(Object.keys(attrObj)[0]);
+
+    if (Object.keys(attrObj)[0] in favorites) {
+        // If already in favorite gifs, do nothing
+        return;
+    }
+    else {
+        
+        // Add the gif object in the favorite gif object
+        favorites[attrObj.gifId] = {"gifStill": attrObj.gifStill,
+                                 "gifAnimate": attrObj.gifAnimate,
+                                 "gifTitle": attrObj.gifTitle,
+                                 "gifRaing": attrObj.gifRaing};
+
+        // Update localstorage
+        localStorage.setItem("favGifs", JSON.stringify(favorites));
+
+        // Change the favorite picture to solid heart
+        elem.attr("src", "assets/images/heart.png");
+    }
 }
 
 /* 
@@ -213,7 +254,7 @@ function displayFav(favoriteGifs) {
 $(document).ready(function() {
 
     // Initialize
-    renderBtns();
+    init();
 
     // Ready to display tooltips
     $('[data-toggle="tooltip"]').tooltip();  
@@ -236,7 +277,7 @@ $(document).ready(function() {
 
     // Add to Favorite listener
     $(document).on("click", ".favorite", function() {   
-        addToFavorite($(this).attr("data-gif-attr"));
+        addToFavorite($(this));
     });
     
     // Favorite GIFs button listener
