@@ -13,6 +13,9 @@ var queryParams = { "api_key": apiKey};
 // Number of pictures to get at one time
 var picNum = 10;
 
+// Boolean to show whether the current page is favorite page
+var favPage = false;
+
 /*
  * Function: called when the page is loaded
  */
@@ -66,7 +69,6 @@ function getGifs(btnValue) {
         url: queryURL + $.param(queryParams),
         method: "GET"
       }).then(function(response) {
-        console.log(response);
 
         // Clean up show area
         $("#show").empty();
@@ -86,8 +88,6 @@ function getGifs(btnValue) {
                           "gifAnimate" : gifAnimate,
                           "gifTitle" : gifTitle,
                           "gifRating" : gifRating};
-//console.log(favObj);
-//console.log(JSON.stringify(favObj));
 
             // Compose a div to hold the image and the information
             col = $("<div>");
@@ -106,13 +106,16 @@ function getGifs(btnValue) {
             // Compose the favorite icon element
             fav = $("<img>");
             fav.attr("class", "favorite");
-            if (gifId in favorites) 
+            if (gifId in favorites) {
                 fav.attr("src", "assets/images/heart.png");
-            else
+                fav.attr("title", "Remove from Favorites");
+            }
+            else {
                 fav.attr("src", "assets/images/heart-hollow.png");
+                fav.attr("title", "Add to Favorites");
+            }
             fav.attr("data-toggle", "tooltip");
             fav.attr("data-placement", "top");
-            fav.attr("title", "Add to Favorite");
             fav.attr("data-gif-attr", JSON.stringify(favObj));
 
             // Compose a div to hold information
@@ -133,7 +136,6 @@ function getGifs(btnValue) {
             // Add the div to the image area
             $("#show").append(col);
         }
-
     });
 }
 
@@ -179,21 +181,29 @@ function togglePicState(picture, state) {
 /*
  * Function: to store user's favorite gif
  */
-function addToFavorite(elem) {
+function handleFavorite(elem) {
 
     var attr = elem.attr("data-gif-attr");
     var attrObj = JSON.parse(attr);
     var key = Object.keys(attrObj)[0];
 
-console.log(attr);
-//console.log(attrObj);
-//console.log(Object.keys(attrObj)[0]);
-//console.log(attrObj[key]);
-
     if (key in favorites) {
-        // If already in favorite gifs, do nothing
-//console.log("fav exists");
-        return;
+        
+        // If already in favorite gifs, remove it
+        delete favorites[key];
+
+        // Update localstorage
+        localStorage.setItem("favGifs", JSON.stringify(favorites));
+
+        // Change the favorite picture to hollow heart
+        elem.attr("src", "assets/images/heart-hollow.png");
+
+        // Change tooltip title
+        elem.attr("title", "Add to Favorites");
+
+        // Remove the image if we are in the favorite page
+        if (favPage)
+            elem.closest('.img-container').remove();
     }
     else {
         
@@ -203,13 +213,14 @@ console.log(attr);
                           "gifTitle": attrObj[key].gifTitle,
                           "gifRating": attrObj[key].gifRating};
 
-//console.log(favorites);
-
         // Update localstorage
         localStorage.setItem("favGifs", JSON.stringify(favorites));
 
         // Change the favorite picture to solid heart
         elem.attr("src", "assets/images/heart.png");
+
+        // Change tooltip title
+        elem.attr("title", "Remove from Favorites");
     }
 }
 
@@ -227,30 +238,40 @@ function displayFav() {
 
     for (var i = 0; i<keys.length; i++) {
 
-         // Compose a div to hold the image and the information
-         col = $("<div>");
-         col.attr("class", "col-xs-12 col-sm-4 img-container");
-
-         // Compose the image element
-         img = $("<img>");
-         img.attr("alt", "Favorite Gif");
-         img.attr("src", favorites[keys[i]].gifStill);
-         img.attr("class", "gif img-fluid");
-         img.attr("data-still", favorites[keys[i]].gifStill);
-         img.attr("data-animate", favorites[keys[i]].gifAnimate);
-         img.attr("data-state", "still");
-         img.attr("id", "gif-" + i);
-
-         // Compose a div to hold information
-         info = $("<div>");
-         var title = $("<div>");
-         var rating = $("<div>");
-         title.text(favorites[keys[i]].gifTitle.length==0? "No Title" : favorites[keys[i]].gifTitle);
-         rating.text("Rating: " + favorites[keys[i]].gifRating);
-         info.append(title);
-         info.append(rating);
-         info.attr("class", "info");
+        // Compose a div to hold the image and the information
+        col = $("<div>");
+        col.attr("class", "col-xs-12 col-sm-4 img-container");
+        // Compose the image element
+        img = $("<img>");
+        img.attr("alt", "Favorite Gif");
+        img.attr("src", favorites[keys[i]].gifStill);
+        img.attr("class", "gif img-fluid");
+        img.attr("data-still", favorites[keys[i]].gifStill);
+        img.attr("data-animate", favorites[keys[i]].gifAnimate);
+        img.attr("data-state", "still");
+        img.attr("id", "gif-" + i);
+        // Compose a div to hold information
+        info = $("<div>");
+        var title = $("<div>");
+        var rating = $("<div>");
+        title.text(favorites[keys[i]].gifTitle.length==0? "No Title" : favorites[keys[i]].gifTitle);
+        rating.text("Rating: " + favorites[keys[i]].gifRating);
+        info.append(title);
+        info.append(rating);
+        info.attr("class", "info");
         
+        var favObj = {};
+        favObj[keys[i]] = favorites[keys[i]];
+
+        // Compose the favorite icon element
+        fav = $("<img>");
+        fav.attr("class", "favorite");
+        fav.attr("src", "assets/images/heart.png");
+        fav.attr("title", "Remove from Favorites");
+        fav.attr("data-toggle", "tooltip");
+        fav.attr("data-placement", "top");
+        fav.attr("data-gif-attr", JSON.stringify(favObj));
+
          // Add the image and info to the div
          col.append(img);
          col.append(fav);
@@ -267,15 +288,20 @@ $(document).ready(function() {
     init();
 
     // Ready to display tooltips
-    $('[data-toggle="tooltip"]').tooltip();  
+    //$('[data-toggle="tooltip"]').tooltip();  
+    $("body").tooltip({
+        selector: '[data-toggle="tooltip"]'
+    });
 
     // Gifs button listener
     $(document).on("click", ".topicBtn", function() {   
+        favPage = false;
         getGifs($(this).attr("value"));
     });
 
     // Input Submit button listener
     $("#newTopicBtn").on("click", function() {
+        favPage = false;
         event.preventDefault();
         addNewTopic();
     });
@@ -287,11 +313,12 @@ $(document).ready(function() {
 
     // Add to Favorite listener
     $(document).on("click", ".favorite", function() {   
-        addToFavorite($(this));
+        handleFavorite($(this));
     });
     
     // Favorite GIFs button listener
     $("#favoriteGifBtn").on("click", function() {
+        favPage = true;
         displayFav();
     });
 
