@@ -79,14 +79,15 @@ function getGifs(btnValue) {
             gifTitle = response.data[i].title;
             gifRating = response.data[i].rating;
             gifId = response.data[i].id;
-console.log("gifId: " + gifId);
 
             // Put in an object 
-            var favObj = {gifId: {"gifStill" : gifStill,
+            var favObj = {};
+            favObj[gifId] = {"gifStill" : gifStill,
                           "gifAnimate" : gifAnimate,
                           "gifTitle" : gifTitle,
-                          "gifRating" : gifRating}};
-console.log("favObj: " + favObj);
+                          "gifRating" : gifRating};
+//console.log(favObj);
+//console.log(JSON.stringify(favObj));
 
             // Compose a div to hold the image and the information
             col = $("<div>");
@@ -182,19 +183,27 @@ function addToFavorite(elem) {
 
     var attr = elem.attr("data-gif-attr");
     var attrObj = JSON.parse(attr);
-console.log(Object.keys(attrObj)[0]);
+    var key = Object.keys(attrObj)[0];
 
-    if (Object.keys(attrObj)[0] in favorites) {
+console.log(attr);
+//console.log(attrObj);
+//console.log(Object.keys(attrObj)[0]);
+//console.log(attrObj[key]);
+
+    if (key in favorites) {
         // If already in favorite gifs, do nothing
+//console.log("fav exists");
         return;
     }
     else {
         
         // Add the gif object in the favorite gif object
-        favorites[attrObj.gifId] = {"gifStill": attrObj.gifStill,
-                                 "gifAnimate": attrObj.gifAnimate,
-                                 "gifTitle": attrObj.gifTitle,
-                                 "gifRaing": attrObj.gifRaing};
+        favorites[key] = {"gifStill": attrObj[key].gifStill,
+                          "gifAnimate": attrObj[key].gifAnimate,
+                          "gifTitle": attrObj[key].gifTitle,
+                          "gifRating": attrObj[key].gifRating};
+
+//console.log(favorites);
 
         // Update localstorage
         localStorage.setItem("favGifs", JSON.stringify(favorites));
@@ -207,15 +216,16 @@ console.log(Object.keys(attrObj)[0]);
 /* 
  * Function: to display user selected favorite gifs
  */
-function displayFav(favoriteGifs) {
+function displayFav() {
 
     // local variables
     var col, img, info, fav;
+    var keys = Object.keys(favorites);
 
     // Clean up show area
     $("#show").empty();
 
-    for (var i = 0; i<favorites.length; i++) {
+    for (var i = 0; i<keys.length; i++) {
 
          // Compose a div to hold the image and the information
          col = $("<div>");
@@ -224,10 +234,10 @@ function displayFav(favoriteGifs) {
          // Compose the image element
          img = $("<img>");
          img.attr("alt", "Favorite Gif");
-         img.attr("src", favorites[i].gifStill);
+         img.attr("src", favorites[keys[i]].gifStill);
          img.attr("class", "gif img-fluid");
-         img.attr("data-still", favorites[i].gifStill);
-         img.attr("data-animate", favorites[i].gifAnimate);
+         img.attr("data-still", favorites[keys[i]].gifStill);
+         img.attr("data-animate", favorites[keys[i]].gifAnimate);
          img.attr("data-state", "still");
          img.attr("id", "gif-" + i);
 
@@ -235,8 +245,8 @@ function displayFav(favoriteGifs) {
          info = $("<div>");
          var title = $("<div>");
          var rating = $("<div>");
-         title.text(favorites[i].gifTitle.length==0? "No Title" : favorites[i].gifTitle);
-         rating.text("Rating: " + favorites[i].gifRating);
+         title.text(favorites[keys[i]].gifTitle.length==0? "No Title" : favorites[keys[i]].gifTitle);
+         rating.text("Rating: " + favorites[keys[i]].gifRating);
          info.append(title);
          info.append(rating);
          info.attr("class", "info");
