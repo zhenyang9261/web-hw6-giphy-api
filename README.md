@@ -10,4 +10,8 @@
 * Click on the "Favorite GIFs" button to see all the stored favorite GIFs. The favorite section is persistant even when the page reloads.
 * You may add a topic of your interest in the text field left to the "Add New Topic" button, then click the button. If the topic exists, it will not be added again. 
 
+### Deployed Page URL ###
+
+https://zhenyang9261.github.io/web-hw6-giphy-api/
+
 ### Have Fun! ###
