@@ -16,6 +16,12 @@ var picNum = 10;
 // Boolean to show whether the current page is favorite page
 var favPage = false;
 
+// Offset
+var offset = 0;
+
+// Current topic
+var currentTopic = "";
+
 /*
  * Function: called when the page is loaded
  */
@@ -53,14 +59,15 @@ function renderBtns() {
 /*
  * Function: to get gifs when a button is clicked.
  */
-function getGifs(btnValue) {
+function getGifs() {
 
     // local variables
     var col, img, info, fav;
     var gifStill, gifAnimate, gifTitle, gifRating, gifId;
 
-    queryParams.q = btnValue;
+    queryParams.q = currentTopic;
     queryParams.limit = picNum;
+    queryParams.offset = offset;
 
     console.log(queryURL + $.param(queryParams));
     
@@ -71,7 +78,8 @@ function getGifs(btnValue) {
       }).then(function(response) {
 
         // Clean up show area
-        $("#show").empty();
+        if (offset === 1)
+            $("#show").empty();
 
         for (var i=0; i<picNum; i++) {
 
@@ -95,13 +103,13 @@ function getGifs(btnValue) {
 
             // Compose the image element
             img = $("<img>");
-            img.attr("alt", btnValue + " picture from Giphy");
+            img.attr("alt", currentTopic + " picture from Giphy");
             img.attr("src", gifStill);
             img.attr("class", "gif img-fluid");
             img.attr("data-still", gifStill);
             img.attr("data-animate", gifAnimate);
             img.attr("data-state", "still");
-            img.attr("id", "gif-" + i);
+            img.attr("id", "gif-" + offset + i);
             
             // Compose the favorite icon element
             fav = $("<img>");
@@ -134,7 +142,7 @@ function getGifs(btnValue) {
             col.append(info);
 
             // Add the div to the image area
-            $("#show").append(col);
+            $("#show").prepend(col);
         }
     });
 }
@@ -144,26 +152,31 @@ function getGifs(btnValue) {
  */
 function addNewTopic() {
     
-    
+    // Get user input, trim and convert to all lowercase
     var topic = $("#newTopicVal").val().trim().toLowerCase();
 
-    // If a topic is entered
+    // If the topic is empty
     if (topic.length != 0) {
         
-        // Add the topic to the array
-        topics.push(topic);
+        // Execute this block only if the topic is not already in the topic array
+        if (!topics.includes(topic)) {
+            
+            // Add the topic to the array
+            topics.push(topic);
 
-        // Refresh the button display
-        renderBtns();
+            // Refresh the button display
+            renderBtns();
+        }
+
+        // Empty the field
+        $("#newTopicVal").val('');
     }
-
 }
 
 /*
  * Function: to toggle between moving and still pictures when a picture is clicked
  */
 function togglePicState(picture, state) {
-
 
     if (state == "still") {
         var sourceAnimate = $("#"+picture).attr("data-animate");
@@ -175,11 +188,10 @@ function togglePicState(picture, state) {
         $("#"+picture).attr("src", sourceStill);
         $("#"+picture).attr("data-state", "still");
     }
-
 }
 
 /*
- * Function: to store user's favorite gif
+ * Function: to add or remove user's favorite gif
  */
 function handleFavorite(elem) {
 
@@ -296,12 +308,14 @@ $(document).ready(function() {
     // Gifs button listener
     $(document).on("click", ".topicBtn", function() {   
         favPage = false;
-        getGifs($(this).attr("value"));
+        offset = 1;
+        currentTopic = $(this).attr("value");
+        $("#get-more-btn").attr("style", "display:inline-block");
+        getGifs();
     });
 
     // Input Submit button listener
-    $("#newTopicBtn").on("click", function() {
-        favPage = false;
+    $("#new-topic-btn").on("click", function() {
         event.preventDefault();
         addNewTopic();
     });
@@ -317,9 +331,15 @@ $(document).ready(function() {
     });
     
     // Favorite GIFs button listener
-    $("#favoriteGifBtn").on("click", function() {
+    $("#favorite-gif-btn").on("click", function() {
         favPage = true;
+        $("#get-more-btn").attr("style", "display:none");
         displayFav();
     });
 
+    // Get More GIFs button listener
+    $("#get-more-btn").on("click", function() {
+        offset += 10;
+        getGifs();
+    });
 });
