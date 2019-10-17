@@ -8,21 +8,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-  <!-- jQuery Library link -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-
   <!-- Bootstrap css link -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
   
-  <!-- Project specific css and javascript -->
+  <!-- Project specific css -->
   <link rel="stylesheet" href="assets/css/style.css" type="text/css">
-  <script src="assets/javascript/config.js"></script>
-  <script src="assets/javascript/giphy.js"></script>
 
 </head>
 
 <body>
- 
+  <div class="jumbotron">
+    <h1 class="display-4 page-title">GifTastic!</h1>
+  </div>
+
   <div class="container">
 
     <div class="row">
@@ -32,8 +30,20 @@
     <br>
 
     <div class="row">
-      <input type="text" id="newTopicVal"></input>
-      <button type="submit" id="newTopicBtn" class="btn btn-outline-primary">Add New Topic</button>
+      <div class="col-xs-12 col-sm-6">
+        <form>
+          <input type="text" id="newTopicVal"></input>
+          <input type="submit" id="new-topic-btn" class="btn btn-info" value="Add New Topic">
+        </form>
+      </div>
+
+      <div class="col-xs-12 col-sm-3">
+        <button class="btn btn-info" id="get-more-btn" style="display: none;">Get More GIFs</button>
+      </div>
+
+      <div class="col-xs-12 col-sm-3">
+        <button class="btn btn-info" id="favorite-gif-btn">Favorite GIFs</button>
+      </div>
     </div>
 
     <br>
@@ -42,6 +52,16 @@
 
   </div>
 
+  <!-- jQuery Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+  <!-- Bootstrap JS Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+  <!-- Project specific JS -->
+  <script src="assets/javascript/config.js"></script>
+  <script src="assets/javascript/giphy.js"></script>
 </body>
 
 </html>
